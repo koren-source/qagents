@@ -21,6 +21,13 @@ async function main() {
 
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
+
+  const maxCandidatesIdx = args.indexOf('--max-candidates');
+  const maxCandidates = maxCandidatesIdx !== -1 ? Number(args[maxCandidatesIdx + 1]) : null;
+
+  const maxApprovedIdx = args.indexOf('--max-approved');
+  const maxApproved = maxApprovedIdx !== -1 ? Number(args[maxApprovedIdx + 1]) : null;
+
   const sprintIdx = args.indexOf('--sprint');
   const sprintName = sprintIdx !== -1 && args[sprintIdx + 1]
     ? args[sprintIdx + 1]
@@ -29,7 +36,10 @@ async function main() {
   console.log(`\n🚀 Matt — Sprint: ${sprintName}${dryRun ? ' (DRY RUN)' : ''}\n`);
 
   console.log('📡 Step 1/4: Mining content sources...');
-  const candidates = await mine();
+  let candidates = await mine();
+  if (maxCandidates && Number.isFinite(maxCandidates) && maxCandidates > 0) {
+    candidates = candidates.slice(0, maxCandidates);
+  }
   console.log(`   Found ${candidates.length} candidate ideas\n`);
 
   if (candidates.length === 0) {
@@ -38,7 +48,10 @@ async function main() {
   }
 
   console.log('🧠 Step 2/4: Classifying and scoring ideas...');
-  const { approved, rejected } = await classify(candidates);
+  let { approved, rejected } = await classify(candidates);
+  if (maxApproved && Number.isFinite(maxApproved) && maxApproved > 0) {
+    approved = approved.slice(0, maxApproved);
+  }
   console.log(`   Approved: ${approved.length}, Rejected: ${rejected.length}\n`);
 
   if (rejected.length > 0) {

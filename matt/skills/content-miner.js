@@ -2,32 +2,21 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { Client } from '@notionhq/client';
-import Anthropic from '@anthropic-ai/sdk';
 
 const NOTION_KEY_PATH = '/Users/q/.openclaw/workspace/credentials/notion-cutbox-key.txt';
-const IDEA_VAULT_DB_ID = 'cf7ac35f-dd7a-4e03-b4ae-b2e725cbf216';
+const IDEA_VAULT_DB_ID = '325e2d85-cab8-813c-874a-e924e0993f53';
 const MEMORY_DIR = '/Users/q/.openclaw/workspace/memory';
 
 function loadNotionKey() {
   return fs.readFileSync(NOTION_KEY_PATH, 'utf-8').trim();
 }
 
-function getAnthropicKey() {
-  const authPath = `${process.env.HOME}/.claude/.credentials.json`;
-  if (fs.existsSync(authPath)) {
-    try {
-      const creds = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
-      const token = creds?.claudeAiOauth?.accessToken;
-      if (token) return token;
-    } catch (e) { /* fall through */ }
-  }
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (key) return key;
-  throw new Error('No Anthropic credentials found.');
-}
-
-function createAnthropicClient() {
-  return new Anthropic({ apiKey: getAnthropicKey() });
+function callClaude(prompt, model = 'claude-opus-4-6') {
+  const escaped = prompt.replace(/'/g, "'\\''");
+  return execSync(
+    `echo '${escaped}' | claude --print --model ${model} --output-format text`,
+    { encoding: 'utf-8', timeout: 120000, maxBuffer: 10 * 1024 * 1024 }
+  ).trim();
 }
 
 function createNotionClient() {
@@ -177,7 +166,6 @@ function deduplicate(ideas) {
 async function extractContentIdeasFromMemory(rawMemoryCandidates) {
   if (rawMemoryCandidates.length === 0) return [];
 
-  const anthropic = createAnthropicClient();
   const sections = rawMemoryCandidates.map((c) => c.rawText).join('\n\n---\n\n');
   const prompt = `You are a content idea extractor for Koren Saida, a creator and founder.
 
@@ -200,12 +188,7 @@ Sections:
 ${sections}`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 2048,
-      messages: [{ role: 'user', content: prompt }]
-    });
-    const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
+    const text = callClaude(prompt, 'claude-opus-4-6');
     const fenceMatch = text.match(/```json\s*([\s\S]*?)```/);
     const kept = fenceMatch ? JSON.parse(fenceMatch[1].trim()) : [];
     return kept.map((rawText) => ({

@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Client } from '@notionhq/client';
 
 const NOTION_KEY_PATH = '/Users/q/.openclaw/workspace/credentials/notion-cutbox-key.txt';
-const IDEA_VAULT_DB_ID = 'cf7ac35f-dd7a-4e03-b4ae-b2e725cbf216';
+const IDEA_VAULT_DB_ID = '325e2d85-cab8-813c-874a-e924e0993f53';
 const SLACK_CHANNEL_ID = 'C0AF2TN0L6T';
 
 const PILLAR_TO_NOTION = {

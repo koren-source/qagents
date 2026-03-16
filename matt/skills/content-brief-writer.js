@@ -1,35 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import Anthropic from '@anthropic-ai/sdk';
+import { execSync } from 'child_process';
 
 const PROMPT_PATH = path.resolve(
   '/Users/q/.openclaw/workspace/agents/content-planner/prompts/brief-writer-prompt.md'
 );
 
-function getAnthropicKey() {
-  // Prefer Claude OAuth subscription profile
-  const authPath = `${process.env.HOME}/.claude/.credentials.json`;
-  if (fs.existsSync(authPath)) {
-    try {
-      const creds = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
-      const token = creds?.claudeAiOauth?.accessToken;
-      if (token) return token;
-    } catch (e) { /* fall through */ }
-  }
-  // Fallback to env
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (key) return key;
-  throw new Error('No Anthropic credentials found. Ensure Claude OAuth is configured or set ANTHROPIC_API_KEY.');
-}
-
-function createAnthropicClient() {
-  return new Anthropic({ apiKey: getAnthropicKey() });
-}
-
 function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+  return new Promise((resolve) => { setTimeout(resolve, ms); });
 }
 
 function loadPrompt() {
@@ -45,44 +23,35 @@ function fillPrompt(template, idea) {
     .replace('{{BUILD_OUT_HINT}}', idea.vaultMeta?.howToBuildItOut || '');
 }
 
-function getResponseText(response) {
-  return response.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n');
-}
-
 function parseJsonFromResponse(text) {
-  // Try to extract from ```json code fence first (most reliable)
   const fenceMatch = text.match(/```json\s*([\s\S]*?)```/);
-  if (fenceMatch) {
-    return JSON.parse(fenceMatch[1].trim());
-  }
-  // Fallback: find the outermost JSON object
+  if (fenceMatch) return JSON.parse(fenceMatch[1].trim());
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error('No JSON object found in response');
-  }
+  if (start === -1 || end === -1 || end <= start) throw new Error('No JSON in response');
   return JSON.parse(text.slice(start, end + 1));
 }
 
+function callClaude(prompt, model = 'claude-opus-4-6') {
+  const escaped = prompt.replace(/'/g, "'\\''");
+  const result = execSync(
+    `echo '${escaped}' | claude --print --model ${model} --output-format text`,
+    { encoding: 'utf-8', timeout: 120000, maxBuffer: 10 * 1024 * 1024 }
+  );
+  return result.trim();
+}
+
 export async function writeBriefs(approvedIdeas) {
-  const anthropic = createAnthropicClient();
   const template = loadPrompt();
   const briefs = [];
 
   for (let index = 0; index < approvedIdeas.length; index += 1) {
     const idea = approvedIdeas[index];
     const filledPrompt = fillPrompt(template, idea);
-    try {
-      const response = await anthropic.messages.create({
-        model: 'claude-opus-4-6',
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: filledPrompt }]
-      });
 
-      const parsed = parseJsonFromResponse(getResponseText(response));
+    try {
+      const responseText = callClaude(filledPrompt, 'claude-opus-4-6');
+      const parsed = parseJsonFromResponse(responseText);
       briefs.push({
         id: idea.id,
         source: idea.source,
