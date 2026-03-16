@@ -1,0 +1,15 @@
+{
+  "name": "matt-content-planner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Matt (dormant content planner agent) — upstream of Charles LinkedIn writer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dry-run": "node index.js --dry-run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@notionhq/client": "^2.2.0"
+  }
+}
