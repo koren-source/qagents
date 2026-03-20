@@ -9,6 +9,7 @@ All active Q agents for Koren's operations. Each agent lives in its own folder w
 | [Scout](./scout/) | 🟢 Active | Research — AI news, competitor intel, overnight research queue | #agent-scout | Claude Sonnet 4.6 |
 | [Charles](./charles/) | 🟢 Active | LinkedIn content — mine → write → score → publish | #agent-charles | Opus (mining) + Sonnet (writing) |
 | [Matt](./matt/) | 🟡 Dormant | Content Planner — idea vault → classify → briefs → Notion + Slack | #q-content | Sonnet (classifier) + Opus (brief writer) |
+| [QPhone](./qphone/) | 🟡 Building (A2P pending) | SMS — outbound/inbound via Twilio, Slack approval in #qphone | #qphone | Sonnet 4.6 |
 
 ## Structure
 

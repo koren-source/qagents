@@ -1,0 +1,20 @@
+{
+  "name": "qphone-sms-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "QPhone — Twilio SMS agent for outbound/inbound messaging via #qphone",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "server": "node index.js --server",
+    "send": "node index.js --send --to +1XXXXXXXXXX --body 'message here'",
+    "check-approvals": "node index.js --check-approvals",
+    "test-security": "node index.js --test-security"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@notionhq/client": "^2.2.0",
+    "twilio": "^5.0.0",
+    "express": "^4.18.0"
+  }
+}

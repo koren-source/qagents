@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.qphone.approvals</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/node</string>
+		<string>/Users/q/agents/qagents/qphone/index.js</string>
+		<string>--check-approvals</string>
+	</array>
+	<key>StartInterval</key>
+	<integer>30</integer>
+	<key>StandardOutPath</key>
+	<string>/Users/q/.openclaw/workspace/logs/qphone-approvals.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/q/.openclaw/workspace/logs/qphone-approvals.log</string>
+	<key>WorkingDirectory</key>
+	<string>/Users/q/agents/qagents/qphone</string>
+</dict>
+</plist>
